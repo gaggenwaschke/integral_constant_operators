@@ -1,0 +1,14 @@
+name: gcc-12
+
+on:
+  push:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  unit_test:
+    uses: ./.github/workflows/generic.yaml
+    with:
+      compiler_install_name: g++-12
+      compiler_run_name: g++-12
+      

@@ -1,0 +1,52 @@
+name: Generic compiler
+
+on:
+  workflow_call:
+    inputs:
+      compiler_install_name:
+        required: true
+        type: string
+      compiler_run_name:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: ${{inputs.compiler_run_name}}, C++${{matrix.cxx_version}}, ${{matrix.build_type}}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        build_type:
+          - Debug
+          - Release
+        cxx_version:
+          - 20
+
+    env:
+      CMAKE_CXX_STANDARD:	${{matrix.cxx_version}}
+      CMAKE_BUILD_TYPE: ${{matrix.build_type}}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y cmake ninja-build catch2 ${{inputs.compiler_install_name}}
+
+    - name: Configure build
+      working-directory: ${{runner.workspace}}
+      run: cmake -B build -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} -D CMAKE_CXX_COMPILER=${{inputs.compiler_run_name}} -G Ninja -S ${GITHUB_WORKSPACE}
+
+    - name: Build
+      working-directory: ${{runner.workspace}}
+      run: cmake --build build --parallel
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build/unit_test
+      run: ./integral_constant_operators_unit_test --reporter junit --out unit_test_report.xml
+
+    - name: Publish test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: unit test report
+        path: ${{runner.workspace}}/build/unit_test/unit_test_report.xml

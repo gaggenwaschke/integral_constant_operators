@@ -1,0 +1,102 @@
+#pragma once
+
+#include <concepts>
+#include <type_traits>
+
+namespace std {
+// Disjunction
+template<typename Other>
+constexpr true_type
+operator||(true_type, const Other&) noexcept
+{
+  return {};
+}
+
+template<typename Other>
+constexpr true_type
+operator||(const Other&, true_type) noexcept
+  requires(!same_as<true_type, Other>)
+{
+  return {};
+}
+
+template<typename Other>
+constexpr Other
+operator||(false_type, Other other) noexcept
+  requires(!same_as<true_type, Other>)
+{
+  return other;
+}
+
+template<typename Other>
+constexpr Other
+operator||(Other other, false_type) noexcept
+  requires(!same_as<true_type, Other> && !same_as<false_type, Other>)
+{
+  return other;
+}
+
+// Conjunction
+template<typename Other>
+constexpr false_type
+operator&&(false_type, const Other&) noexcept
+{
+  return {};
+}
+
+template<typename Other>
+constexpr false_type
+operator&&(const Other&, false_type) noexcept
+  requires(!same_as<false_type, Other>)
+{
+  return {};
+}
+
+template<typename Other>
+constexpr Other
+operator&&(true_type, Other other) noexcept
+  requires(!same_as<false_type, Other> && !same_as<true_type, Other>)
+{
+  return other;
+}
+
+template<typename Other>
+constexpr Other
+operator&&(Other other, true_type) noexcept
+  requires(!same_as<false_type, Other>)
+{
+  return other;
+}
+
+template<typename left_type, left_type left_value, typename right_type, right_type right_value>
+constexpr integral_constant<common_type_t<left_type, right_type>, left_value + right_value>
+operator+(integral_constant<left_type, left_value>, integral_constant<right_type, right_value>)
+  requires((integral<left_type> || floating_point<left_type>) && (integral<right_type> || floating_point<right_type>))
+{
+  return {};
+}
+
+template<typename left_type, left_type left_value, typename right_type, right_type right_value>
+constexpr integral_constant<common_type_t<left_type, right_type>, left_value - right_value>
+operator-(integral_constant<left_type, left_value>, integral_constant<right_type, right_value>)
+  requires((integral<left_type> || floating_point<left_type>) && (integral<right_type> || floating_point<right_type>))
+{
+  return {};
+}
+
+template<typename left_type, left_type left_value, typename right_type, right_type right_value>
+constexpr integral_constant<common_type_t<left_type, right_type>, left_value * right_value>
+operator*(integral_constant<left_type, left_value>, integral_constant<right_type, right_value>)
+  requires((integral<left_type> || floating_point<left_type>) && (integral<right_type> || floating_point<right_type>))
+{
+  return {};
+}
+
+template<typename left_type, left_type left_value, typename right_type, right_type right_value>
+constexpr integral_constant<common_type_t<left_type, right_type>, left_value / right_value>
+operator/(integral_constant<left_type, left_value>, integral_constant<right_type, right_value>)
+  requires((integral<left_type> || floating_point<left_type>) && (integral<right_type> || floating_point<right_type>))
+{
+  return {};
+}
+} // namespace std
